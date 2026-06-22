@@ -293,7 +293,7 @@ model:
     freeze_backbone: true
     freeze_depth_branch: false
     freeze_control_branches: []
-    pretrained_ckpt: ./universal_pix_t2i_workdirs/exp_pixeldit_threecontrol_v1_mixed_smalllr_from_softcanny2k/checkpoints/epoch_1_step_2000.pth
+    pretrained_ckpt: ./pixeldit_t2i_v1.pth
     load_strict: false
     load_prefix: core.
     depth_branch_lr_scale: 0.05
