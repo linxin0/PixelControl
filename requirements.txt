@@ -1,0 +1,34 @@
+# Core training / inference (PixelDiT three-control)
+# Tested with: torch 2.3.0 (CUDA), Python 3.10
+torch>=2.1
+torchvision
+numpy<2
+pyyaml
+pyrallis
+accelerate
+transformers>=4.44        # for gemma-2-2b-it text encoder
+tokenizers
+einops
+Pillow
+opencv-python
+scipy
+tqdm
+tensorboard
+
+# --- Metric evaluation extras ---
+pytorch-fid               # FID (InceptionV3)
+lpips                     # LPIPS (alex)
+# CLIP is provided by transformers (CLIPModel / CLIPProcessor)
+
+# --- Segmentation consistency (SAM2) ---
+# transformers mask-generation pipeline + local SAM2.1-Hiera-Large weights
+# scikit-learn                # only if ARI/NMI cluster metrics are enabled
+# scipy (already above)       # Hungarian label matching
+
+# --- YOLO object detection / size stats ---
+# ultralytics                 # YOLOE-26x-seg
+
+# --- Depth consistency (DepthAnything-3) ---
+# Install DepthAnything-3 separately and point DA3_SRC / DA3_MODEL at it.
+# DA3 itself pulls: omegaconf, addict, imageio, e3nn, evo (see DA3 repo).
+# Recommended: run depth/seg metrics inside the `deco` conda env.
