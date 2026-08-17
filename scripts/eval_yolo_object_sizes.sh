@@ -3,7 +3,7 @@ set -euo pipefail
 # YOLOE open-vocabulary segmentation + object-size distribution analysis.
 # Stage 1: run YOLOE on RGB images (needs ultralytics + a yoloe-*-seg.pt model).
 # Stage 2: bucket every detected object into small/medium/large and report
-#          the proportions (the paper's object-size statistics).
+#          object-size proportions for the supplied evaluation directory.
 #   META_DIR=t2i/data/blip_depth_da3_nested_giant_large_1_1/sa_000201 LIMIT=2000 bash scripts/eval_yolo_object_sizes.sh
 # NOTE: run in an env with `ultralytics` installed.
 source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"

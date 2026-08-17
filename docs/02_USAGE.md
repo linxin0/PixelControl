@@ -1,11 +1,11 @@
-# 02 — Usage
+# PixelControl usage
 
 ## 1. Install
 
 ```bash
 cd PixelControl
 pip install -r requirements.txt
-# Optional metric backends (see docs/03):
+# Optional metric backends:
 #   pip install ultralytics            # YOLO object-size stats
 #   pip install pytorch-fid lpips      # visual quality (if not already)
 #   DepthAnything-3 + SAM2.1 weights   # depth / seg consistency
@@ -70,9 +70,9 @@ GPUS=0,1 NP=2 bash scripts/train_threecontrol.sh  # final mixed gated model
 ```
 
 Effective batch = `train_batch_size(16) × NP(2) × grad_accum(4) = 128`.
-Checkpoints save every `save_model_steps` (2000); validation runs every
-`every_n_steps` (500 single-control / per config). Outputs go to the config's
-`work_dir` (`t2i/universal_pix_t2i_workdirs/<exp_name>/{checkpoints,val}`).
+Checkpoints save every `save_model_steps` (2000). The canonical configs do not
+run training-time validation. Outputs go to the config's `work_dir` under
+`checkpoints/`.
 
 To resume / change LR see `train.override_lr_on_resume` and `optimizer.lr` in
 the YAML.
@@ -105,8 +105,9 @@ GEN=outputs/infer_seg NAME=ours_seg bash scripts/eval_seg_sam2.sh
 GEN=outputs/infer_depth NAME=ours_depth SUFFIX=depth bash scripts/eval_depth_da3.sh
 ```
 
-See `docs/04_METRICS.md` for what each number means and how each metric is
-computed, and `docs/05_YOLO.md` for the object-size analysis.
+The scripts write JSON/CSV/Markdown summaries in the output directory. Use the
+same generated-image folder, sample count, checkpoint, seed, sampler settings,
+and external model paths for a comparison.
 
 ## 6. Smoke test the package (no checkpoint needed)
 
@@ -127,3 +128,22 @@ external asset locations, run:
 ```bash
 bash scripts/check_setup.sh
 ```
+
+## 7. External assets and data layout
+
+The repository does not include the base PixelDiT checkpoint, control
+checkpoints, datasets, condition maps, or third-party evaluator weights.
+Configure their paths in `scripts/_env.sh` and in the selected YAML when
+needed. The expected data contract is:
+
+```text
+<image_root>/<shard>/<stem>.jpg
+<image_root>/<shard>/<stem>.txt
+<depth_root>/<shard>/<stem>.depth.npy
+<seg_root>/<shard>/<stem>.sam2_label.npy
+<edge_root>/<shard>/<stem>.edge.png
+```
+
+The training YAMLs use `sa_000000` through `sa_000199`. The inference examples
+use the separately configured evaluation shard and cap the run with
+`MAX_SAMPLES=2000` when a 2,000-image run is required.

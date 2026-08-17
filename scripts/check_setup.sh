@@ -68,5 +68,5 @@ for path in \
 done
 
 printf '\nPreflight finished: %d fatal issue(s), %d asset/package warning(s).\n' "$fail" "$warn"
-printf 'Warnings are expected on a code-only checkout; see docs/03_PRETRAINED_MODELS.md.\n'
+printf 'Warnings are expected on a code-only checkout; see docs/02_USAGE.md.\n'
 exit "$fail"

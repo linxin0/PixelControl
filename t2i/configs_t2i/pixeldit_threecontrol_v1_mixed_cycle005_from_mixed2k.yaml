@@ -489,32 +489,3 @@ control:
           threshold_min: 0.2745
           threshold_max: 0.5882
           temperature: 0.03
-validation:
-  enabled: true
-  every_n_steps: 500
-  image_root: ./data/blip/extracted_new/sa_000201
-  depth_root: ./data/blip_depth_da3_nested_giant_large_1_1/sa_000201
-  seg_root: ./data/blip_sam2_large_extracted/sa_000201
-  edge_root: ./data/blip_edge/sa_000201
-  num_controls: 3
-  control_modes:
-  - depth
-  - seg
-  - edge
-  - depth_seg
-  - depth_edge
-  - seg_edge
-  - depth_seg_edge
-  resolution: 512
-  max_samples: 50
-  batch_size: 8
-  num_sampling_steps: 50
-  cfg_scale: 2.75
-  seed: 2025
-  save_dir: val
-  negative_prompt: low quality, worst quality, over-saturated, blurry, deformed, watermark
-  depth_repeat_to_3ch: false
-  invert_depth: false
-  seg_normalize: true
-  require_caption: true
-  cache_index_path: ./outputs/pixeldit_threecontrol_eval_sa000201_index_mixed_cycle005_first200.json

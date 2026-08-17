@@ -149,7 +149,7 @@ class CycleLossConfig(BaseConfig):
 
     type: Optional[str] = None
     init_args: Dict[str, Any] = field(default_factory=dict)
-    # Explicit structure verifier used by this loss. This keeps the paper's
+    # Explicit structure verifier used by this loss. This keeps the selected
     # DA3 / SAM2 / Soft-Canny paths visible in the experiment configuration.
     verifier: Optional[str] = None
 
@@ -203,12 +203,11 @@ class ValidationConfig(BaseConfig):
     image_root: str = ""
     depth_root: str = ""
     seg_root: str = ""
-    # Optional pre-computed edge map directory; when empty the validation
+    # Optional pre-computed edge map directory; when empty the inference
     # dataset computes a Sobel edge from the RGB image on the fly.
     edge_root: str = ""
     # 1 = depth eval only, 2 = depth+seg multi eval, 3 = depth+seg+edge eval.
-    # Defaults to 2 to preserve legacy behaviour; set 3 to enable the
-    # 7-mode three-control validation sweep.
+    # Set 3 to enable the 7-mode three-control inference sweep.
     num_controls: int = 2
     resolution: int = 512
     max_samples: int = 16
@@ -496,7 +495,7 @@ def run_control_validation(
     world_size = max(1, int(world_size))
     val_indices = list(range(rank, len(val_dataset), world_size))
     logger.info(
-        f"Running control validation at step {global_step}: save to {val_dir} "
+        f"Running control inference at step {global_step}: save to {val_dir} "
         f"(rank {rank}/{world_size}, items={len(val_indices)}/{len(val_dataset)})"
     )
     for start in range(0, len(val_indices), bs):
@@ -1244,33 +1243,6 @@ def main(cfg: PixDiTControlConfig) -> None:
                         f"layer0=({head[0]:.3f},{head[1]:.3f},{head[2]:.3f}) "
                         f"layerN=({tail[0]:.3f},{tail[1]:.3f},{tail[2]:.3f})"
                     )
-
-            if (
-                accelerator.sync_gradients
-                and config.validation.enabled
-                and config.validation.every_n_steps > 0
-                and optimized_step > 0
-                and optimized_step % config.validation.every_n_steps == 0
-            ):
-                accelerator.wait_for_everyone()
-                run_control_validation(
-                    model=accelerator.unwrap_model(model),
-                    tokenizer=tokenizer,
-                    text_encoder=text_encoder,
-                    null_y=null_y_train,
-                    null_y_mask=null_y_mask,
-                    validation_cfg=config.validation,
-                    text_encoder_cfg=config.text_encoder,
-                    scheduler_cfg=config.scheduler,
-                    work_dir=config.work_dir,
-                    global_step=optimized_step,
-                    device=accelerator.device,
-                    dtype=img.dtype,
-                    logger=logger,
-                    rank=accelerator.process_index,
-                    world_size=accelerator.num_processes,
-                )
-                accelerator.wait_for_everyone()
 
             if (
                 (accelerator.sync_gradients

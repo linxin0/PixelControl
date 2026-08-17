@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Shared environment for all launchers in this package.
 #
-# PKG_ROOT is the release_my_network directory (parent of scripts/).
+# PKG_ROOT is the PixelControl directory (parent of scripts/).
 # Adjust the model paths below if you move the package to another server.
 
 PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PKG_ROOT
 
-# --- runtime env quirks observed on this server's system Python ----------
+# --- runtime settings for the reference environment ----------------------
 # Isolate user-site packages (avoids tokenizers/transformers version clash)
 export PYTHONNOUSERSITE="${PYTHONNOUSERSITE:-1}"
 # Pure-python protobuf parser (avoids onnx/protobuf descriptor TypeError)
