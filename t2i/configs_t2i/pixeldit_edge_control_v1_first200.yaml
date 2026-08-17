@@ -137,24 +137,6 @@ tracker_project_name: pixeldit_control
 name: pixeldit_edge_control_v1_512_bs16x2_acc4_noinj_softcanny001_first200
 loss_report_name: loss
 
-validation:
-  enabled: true
-  every_n_steps: 500
-  image_root: ./data/blip/extracted_new/sa_000201
-  edge_root: ./data/blip_edge/sa_000201
-  num_controls: 1
-  control_modes: [edge]
-  resolution: 512
-  max_samples: 500
-  batch_size: 8
-  num_sampling_steps: 50
-  cfg_scale: 2.75
-  seed: 2025
-  save_dir: val
-  negative_prompt: "low quality, worst quality, over-saturated, blurry, deformed, watermark"
-  require_caption: true
-  cache_index_path: ./outputs/pixeldit_edge_eval_sa000201_index.json
-
 control:
   enabled: true
   mode: single

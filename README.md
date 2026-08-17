@@ -39,8 +39,8 @@ depth, seg, edge, depth_seg, depth_edge, seg_edge, depth_seg_edge
 
 The current implementation names its condition backends explicitly as
 `depth_anything_v3`, `segment_anything_v2`, and `soft_canny`. Training uses
-cached depth/segmentation/edge targets; the offline evaluators re-estimate
-depth and segmentation from generated RGB images for closed-loop metrics.
+cached depth/segmentation/edge targets. Evaluation commands accept generated
+images and the corresponding external reference roots.
 
 ## Repository map
 
@@ -49,22 +49,20 @@ PixelControl/
 ├── pixdit_core/                 # PixelDiT backbone and control branches
 ├── t2i/
 │   ├── train_control.py         # DDP training loop
-│   ├── infer_threecontrol_val.py# deterministic validation sampler
+│   ├── infer_threecontrol_val.py# deterministic inference sampler
 │   ├── train_control.sh         # torchrun launcher
 │   ├── configs_t2i/              # single-control and mixed-control YAMLs
 │   ├── diffusion/                # data, model, losses, scheduler, checkpoint code
 │   └── output/pretrained_models/ # small null text embedding shipped with the repo
 ├── eval/                         # metric implementations
 ├── scripts/                      # shell entry points and shared environment
-├── docs/                         # method, assets, usage, metrics, reproducibility
+├── docs/                         # usage and command reference
 ├── reference_innovation_code/    # compact framework-free method extract
 └── requirements.txt
 ```
 
-Start with [docs/02_USAGE.md](docs/02_USAGE.md) for commands and
-[docs/03_PRETRAINED_MODELS.md](docs/03_PRETRAINED_MODELS.md) for every external
-asset. The exact experiment assumptions and data contract are in
-[docs/07_REPRODUCIBILITY.md](docs/07_REPRODUCIBILITY.md).
+Start with [docs/02_USAGE.md](docs/02_USAGE.md) for setup, training, inference,
+and evaluation commands.
 
 ## Quick start
 
@@ -84,8 +82,8 @@ pip install -r requirements.txt
 ```
 
 Depth and SAM2 evaluators require the separate `deco` environment described in
-[docs/03_PRETRAINED_MODELS.md](docs/03_PRETRAINED_MODELS.md). Run the cheap
-setup check before using GPUs:
+[docs/02_USAGE.md](docs/02_USAGE.md). Run the cheap setup check before using
+GPUs:
 
 ```bash
 bash scripts/check_setup.sh
@@ -154,10 +152,9 @@ META_DIR="$EVAL_DEPTH_ROOT" LIMIT=2000 \
   bash scripts/eval_yolo_object_sizes.sh
 ```
 
-For the object-size breakdown described on the project page, first create the
-YOLOE detections and then pass the resulting directory to
-`eval/eval_nonlarge_conditioned_fidelity.py`; the full command is documented
-in [docs/04_METRICS.md](docs/04_METRICS.md) and [docs/05_YOLO.md](docs/05_YOLO.md).
+For object-size analysis, first create YOLOE detections and then pass the
+resulting directory to `eval/eval_nonlarge_conditioned_fidelity.py`; the
+commands are listed in [docs/02_USAGE.md](docs/02_USAGE.md).
 
 ## Training
 
@@ -181,7 +178,7 @@ Important configuration fields:
 | `train.gradient_accumulation_steps` | 4 | effective batch multiplier |
 | `train.optimizer.lr` | `2e-5` | base learning rate |
 | `train.save_model_steps` | 2000 | checkpoint interval |
-| `validation.every_n_steps` | 500 | lightweight validation interval |
+| `validation` | disabled | canonical training configs run training only |
 | `control.control_probs` | 0.15/0.15/0.15/0.12/0.12/0.12/0.19 | seven-mode mixed sampling |
 | `control.cycle_weight` | 0.02 / 0.01 / 0.005 | seg / edge / mixed |
 | `cycle_scale_weights` | 0.75/0.5/0.5/0.25 | 512/256/128/64 pyramid |
@@ -223,9 +220,7 @@ does not redistribute this dataset or the derived condition maps.
 - **Pyramid cycle loss:** generated structure is checked at 512/256/128/64
   resolutions, balancing layout and boundary fidelity.
 
-See [docs/01_OVERVIEW_AND_INNOVATIONS.md](docs/01_OVERVIEW_AND_INNOVATIONS.md)
-for the architecture and [docs/06_PARAMETERS.md](docs/06_PARAMETERS.md) for
-the complete parameter table.
+See [docs/02_USAGE.md](docs/02_USAGE.md) for the command reference.
 
 ## Reported project-page results
 
@@ -250,10 +245,8 @@ commit used.
 
 - The release contains code and configs, not the base checkpoint, datasets,
   trained checkpoints, or third-party weights.
-- SAM2 and DA3 are used by the offline evaluators to re-estimate generated
-  structure. Training uses cached SAM2 labels and a differentiable surrogate;
-  standard SAM2 mask generation is not differentiated through during the
-  training backward pass.
+- Training uses cached SAM2 labels and a differentiable segmentation surrogate;
+  standard SAM2 mask generation is not part of the training backward pass.
 - The repository exposes separate, composable commands rather than silently
   downloading private assets or running a long end-to-end job.
 - Run `bash scripts/check_setup.sh` and record the exact YAML, checkpoint,
@@ -273,8 +266,7 @@ commit used.
 
 ## License and third-party components
 
-No license file is added by this release yet. Check the licenses of the
-PixelDiT code, Gemma, DepthAnything-3, SAM2, CLIP, LPIPS, PyTorch-FID, and
-YOLOE before redistribution or commercial use. The repository's
-`requirements.txt` only declares Python dependencies; it does not grant rights
-to their weights or datasets.
+The repository code is released under the MIT License in `LICENSE`. Check the
+licenses of the PixelDiT code, Gemma, DepthAnything-3, SAM2, CLIP, LPIPS,
+PyTorch-FID, and YOLOE before redistribution or commercial use. The repository
+does not grant rights to third-party weights or datasets.
