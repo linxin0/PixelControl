@@ -1,0 +1,29 @@
+# Python and local environments
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+deco/
+
+# Local experiment state and large artifacts
+outputs/
+t2i/outputs/
+t2i/universal_pix_t2i_workdirs/
+t2i/data/
+t2i/pretrained/
+t2i/third_party/
+t2i/pixeldit_t2i_v1.pth
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Logs and local tooling
+*.log
+*.out
+*.err
+.DS_Store
+.idea/
+.vscode/

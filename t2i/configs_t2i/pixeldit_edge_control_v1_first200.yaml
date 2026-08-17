@@ -179,12 +179,13 @@ control:
       edge_weight: 1.0
       edge_cycle_loss:
         type: SoftCannyImagePyramidCycleLoss
+        verifier: soft_canny
         init_args:
           loss_res: 128
           smooth_l1_beta: 0.05
           enable_pyramid_cycle_loss: true
           cycle_scales: [512, 256, 128, 64]
-          cycle_scale_weights: [0.1, 0.25, 1.0, 0.25]
+          cycle_scale_weights: [0.75, 0.5, 0.5, 0.25]
           gaussian_kernel: 11
           threshold_min: 0.2745
           threshold_max: 0.5882

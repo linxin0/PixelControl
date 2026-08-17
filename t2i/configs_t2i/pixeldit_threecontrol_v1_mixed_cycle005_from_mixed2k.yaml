@@ -378,6 +378,10 @@ control:
   seg_branch_lr_scale: 0.1
   edge_branch_lr_scale: 0.1
   gate_lr_scale: 0.5
+  verifier_backends:
+    depth: depth_anything_v3
+    seg: segment_anything_v2
+    edge: soft_canny
   gate_log_every: 100
   enable_control_dropout: true
   control_modes:
@@ -404,6 +408,7 @@ control:
       edge_weight: 1.0
       depth_cycle_loss:
         type: DA3CoarseToFinePyramidDepthCycleLoss
+        verifier: depth_anything_v3
         init_args:
           da3_src: ./third_party/depth-anything-3/src
           da3_model_dir: ./pretrained/DA3NESTED-GIANT-LARGE-1.1
@@ -418,9 +423,9 @@ control:
           - 128
           - 64
           cycle_scale_weights:
-          - 0.1
-          - 0.25
           - 0.75
+          - 0.5
+          - 0.5
           - 0.25
           enable_coarse_to_fine_cycle: true
           enable_fine_sobel_weight: true
@@ -439,6 +444,7 @@ control:
           load_dtype: fp32
       seg_cycle_loss:
         type: SAM2SegCycleLoss
+        verifier: segment_anything_v2
         init_args:
           loss_res: 128
           smooth_l1_beta: 0.05
@@ -449,9 +455,9 @@ control:
           - 128
           - 64
           cycle_scale_weights:
-          - 0.1
-          - 0.25
           - 0.75
+          - 0.5
+          - 0.5
           - 0.25
           enable_coarse_to_fine_cycle: true
           enable_fine_sobel_weight: true
@@ -464,6 +470,7 @@ control:
           fine_debug_max_images: 4
       edge_cycle_loss:
         type: SoftCannyImagePyramidCycleLoss
+        verifier: soft_canny
         init_args:
           loss_res: 128
           smooth_l1_beta: 0.05
@@ -474,9 +481,9 @@ control:
           - 128
           - 64
           cycle_scale_weights:
-          - 0.1
-          - 0.25
-          - 1.0
+          - 0.75
+          - 0.5
+          - 0.5
           - 0.25
           gaussian_kernel: 11
           threshold_min: 0.2745

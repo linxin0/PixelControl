@@ -66,7 +66,7 @@ class SoftCannyImagePyramidCycleLoss(nn.Module):
         smooth_l1_beta: float = 0.05,
         enable_pyramid_cycle_loss: bool = True,
         cycle_scales=(512, 256, 128, 64),
-        cycle_scale_weights=(0.1, 0.25, 1.0, 0.25),
+        cycle_scale_weights=(0.75, 0.5, 0.5, 0.25),
         gaussian_kernel: int = 11,
         threshold_min: float = 0.2745,
         threshold_max: float = 0.5882,

@@ -149,6 +149,9 @@ class CycleLossConfig(BaseConfig):
 
     type: Optional[str] = None
     init_args: Dict[str, Any] = field(default_factory=dict)
+    # Explicit structure verifier used by this loss. This keeps the paper's
+    # DA3 / SAM2 / Soft-Canny paths visible in the experiment configuration.
+    verifier: Optional[str] = None
 
 
 @dataclass
@@ -181,6 +184,13 @@ class ControlConfig(BaseConfig):
     # How often (in optimizer steps) to log the layer-wise gate weights when
     # running in multi-control / independent-branches mode. 0 disables.
     gate_log_every: int = 100
+    verifier_backends: Dict[str, str] = field(
+        default_factory=lambda: {
+            "depth": "depth_anything_v3",
+            "seg": "segment_anything_v2",
+            "edge": "soft_canny",
+        }
+    )
     # Cycle loss spec (see CycleLossConfig). Keep this non-Optional because
     # pyrallis 0.3.x has trouble decoding Optional[nested dataclass].
     cycle_loss: CycleLossConfig = field(default_factory=CycleLossConfig)
@@ -295,7 +305,10 @@ def build_control_optimizer(model, optimizer_cfg, control_cfg: ControlConfig):
     return optimizer
 
 
-def build_cycle_loss(spec: Optional[CycleLossConfig]):
+def build_cycle_loss(
+    spec: Optional[CycleLossConfig],
+    verifier_backends: Optional[Dict[str, str]] = None,
+):
     if spec is None or spec.type is None:
         return None
     cls = _LOSS_REGISTRY.get(spec.type)
@@ -304,11 +317,26 @@ def build_cycle_loss(spec: Optional[CycleLossConfig]):
     init_args = dict(spec.init_args or {})
     # Recursively build nested losses for MultiConditionCycleLoss.
     if spec.type == "MultiConditionCycleLoss":
+        verifier_keys = {
+            "depth_cycle_loss": "depth",
+            "seg_cycle_loss": "seg",
+            "edge_cycle_loss": "edge",
+        }
         for key in ("depth_cycle_loss", "seg_cycle_loss", "edge_cycle_loss"):
             sub = init_args.get(key, None)
             if isinstance(sub, dict):
-                sub_cfg = CycleLossConfig(type=sub.get("type"), init_args=sub.get("init_args", {}))
-                init_args[key] = build_cycle_loss(sub_cfg)
+                backend_key = verifier_keys[key]
+                verifier = sub.get("verifier")
+                if verifier is None and verifier_backends:
+                    verifier = verifier_backends.get(backend_key)
+                sub_cfg = CycleLossConfig(
+                    type=sub.get("type"),
+                    init_args=sub.get("init_args", {}),
+                    verifier=verifier,
+                )
+                init_args[key] = build_cycle_loss(sub_cfg, verifier_backends)
+    if spec.verifier is not None:
+        init_args.setdefault("verifier", spec.verifier)
     return cls(**init_args)
 
 
@@ -1026,7 +1054,10 @@ def main(cfg: PixDiTControlConfig) -> None:
     # 5) Cycle loss
     cycle_loss_module = None
     if config.control.enabled and config.control.cycle_weight > 0:
-        cycle_loss_module = build_cycle_loss(config.control.cycle_loss)
+        cycle_loss_module = build_cycle_loss(
+            config.control.cycle_loss,
+            getattr(config.control, "verifier_backends", None),
+        )
         if cycle_loss_module is not None:
             cycle_loss_module = cycle_loss_module.to(accelerator.device)
             logger.info(

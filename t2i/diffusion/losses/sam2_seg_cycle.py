@@ -1,9 +1,12 @@
-"""SAM2 segmentation cycle loss.
+"""SAM2-V2 segmentation-target cycle loss.
 
-Ported from PixelGen ``src/losses/sam2_seg_cycle.py``. SAM2 itself is NOT loaded
-at training time; the cached SAM2 label map is treated as a structural target
-and the loss is computed between the generated image's grayscale edge map and
-the seg-map edge map (multi-scale).
+Ported from PixelGen ``src/losses/sam2_seg_cycle.py``. The training dataset
+supplies the cached label map produced by Segment Anything V2 (SAM2); the
+expensive full SAM2 re-estimation of generated images remains in
+``eval/eval_seg_consistency_sam2.py``. The differentiable training surrogate
+compares the generated image's grayscale structural edge map with that cached
+SAM2 target at the MPCL pyramid scales. This avoids invoking the non-differentiable
+HuggingFace mask-generation pipeline inside the denoising backward pass.
 """
 
 from __future__ import annotations
@@ -25,7 +28,7 @@ class SAM2SegCycleLoss(nn.Module):
         smooth_l1_beta: float = 0.05,
         enable_pyramid_cycle_loss: bool = True,
         cycle_scales=(512, 256, 128, 64),
-        cycle_scale_weights=(0.1, 0.25, 1.0, 0.25),
+        cycle_scale_weights=(0.75, 0.5, 0.5, 0.25),
         enable_coarse_to_fine_cycle: bool = True,
         enable_fine_sobel_weight: bool = True,
         alpha_fine_sobel: float = 0.3,
@@ -35,6 +38,7 @@ class SAM2SegCycleLoss(nn.Module):
         fine_debug_dir: str = "./outputs/multicontrol_v1_seg_fine_debug",
         fine_debug_every: int = 100,
         fine_debug_max_images: int = 4,
+        verifier: str = "segment_anything_v2",
     ):
         super().__init__()
         self.loss_res = int(loss_res)
@@ -53,12 +57,18 @@ class SAM2SegCycleLoss(nn.Module):
         self.fine_debug_dir = str(fine_debug_dir)
         self.fine_debug_every = max(1, int(fine_debug_every))
         self.fine_debug_max_images = max(1, int(fine_debug_max_images))
+        self.verifier = str(verifier)
+        if self.verifier not in {"segment_anything_v2", "sam2", "cached_sam2"}:
+            raise ValueError(
+                "SAM2SegCycleLoss expects verifier='segment_anything_v2' "
+                f"(or alias sam2/cached_sam2), got {self.verifier!r}"
+            )
         self.register_buffer("_fine_debug_calls", torch.zeros((), dtype=torch.long), persistent=False)
         print(
             "[SAM2SegCycleLoss] "
             f"loss_res={self.loss_res} pyramid={self.enable_pyramid_cycle_loss} "
             f"scales={self.cycle_scales} weights={self.cycle_scale_weights} "
-            f"coarse_to_fine={self.enable_coarse_to_fine_cycle}"
+            f"coarse_to_fine={self.enable_coarse_to_fine_cycle} verifier={self.verifier}"
         )
 
     def state_dict(self, *args, destination=None, prefix="", keep_vars=False):

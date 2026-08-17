@@ -9,9 +9,9 @@ Update the matching variable in `scripts/_env.sh` (or the YAML) after download.
 - **Role:** frozen backbone the control branches attach to. Referenced by every
   config as `model.extra.pretrained_ckpt`.
 - **Size:** ~5.2 GB.
-- **Local path (this server):** `t2i/pixeldit_t2i_v1.pth`
-  (the configs point at the absolute repo path; copy it into the package's
-  `t2i/` or edit `pretrained_ckpt` in the 3 YAMLs).
+- **Expected default path:** `t2i/pixeldit_t2i_v1.pth`.
+  The configs refer to this path relative to `t2i/`; alternatively edit
+  `model.extra.pretrained_ckpt` in the selected YAML.
 - This is the project's own checkpoint, not a public download.
 
 ### 2. Gemma-2-2B-it text encoder
@@ -32,7 +32,7 @@ Update the matching variable in `scripts/_env.sh` (or the YAML) after download.
   (1.4 MB). Already wired via `train.null_embed_root: ./output/pretrained_models/`.
 
 ### 4. The 3 trained control checkpoints (your models)
-| Model | Path (this server) | Size |
+| Model | Expected checkpoint path | Size |
 |-------|--------------------|------|
 | seg-only | `.../exp_pixeldit_seg_control_v1_512_bs16x2_acc4_cycle002_first200/checkpoints/epoch_1_step_6000.pth` | ~11 GB |
 | edge-only | `.../exp_pixeldit_edge_control_v1_512_bs16x2_acc4_noinj_softcanny001_first200/checkpoints/epoch_1_step_12000.pth` | ~11 GB |

@@ -3,7 +3,7 @@
 ## 1. Install
 
 ```bash
-cd release_my_network
+cd PixelControl
 pip install -r requirements.txt
 # Optional metric backends (see docs/03):
 #   pip install ultralytics            # YOLO object-size stats
@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 The package adds itself to `sys.path` automatically: the entry scripts insert
 the package root (for `pixdit_core`) and `t2i/` (for `diffusion`). You run
-everything from inside `release_my_network/`.
+everything from inside `PixelControl/`.
 
 ## 2. Configure paths once
 
@@ -23,9 +23,10 @@ Open `scripts/_env.sh` and set the absolute paths for your machine:
 - eval data roots: `EVAL_IMAGE_ROOT`, `EVAL_SEG_ROOT`, `EVAL_EDGE_ROOT`, `EVAL_DEPTH_ROOT`
 - checkpoints: `CKPT_SEG`, `CKPT_EDGE`, `CKPT_THREE`
 
-The training **configs** (`t2i/configs_t2i/*.yaml`) also contain absolute paths
-(`pretrained_ckpt`, dataset roots, `work_dir`). Edit those if you retrain on a
-new server. The defaults match the original server.
+The training **configs** (`t2i/configs_t2i/*.yaml`) use paths relative to
+`t2i/` (for example `./data/...` and `./pixeldit_t2i_v1.pth`). Edit those if
+your data or base checkpoint is elsewhere. Evaluation launchers use the
+repository-root variables in `scripts/_env.sh`.
 
 ## 3. Inference
 
@@ -118,4 +119,11 @@ sys.modules.setdefault("pyrallis", types.SimpleNamespace(wrap=lambda *a,**k:(lam
 import diffusion.model.control_trainer, diffusion.data.datasets.control_datasets  # registrations
 print("imports OK")
 PY
+```
+
+For a broader preflight that also checks source files, Python syntax, and
+external asset locations, run:
+
+```bash
+bash scripts/check_setup.sh
 ```

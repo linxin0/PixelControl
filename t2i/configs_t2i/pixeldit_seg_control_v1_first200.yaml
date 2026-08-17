@@ -178,12 +178,13 @@ control:
       seg_weight: 1.0
       seg_cycle_loss:
         type: SAM2SegCycleLoss
+        verifier: segment_anything_v2
         init_args:
           loss_res: 128
           smooth_l1_beta: 0.05
           enable_pyramid_cycle_loss: true
           cycle_scales: [512, 256, 128, 64]
-          cycle_scale_weights: [0.1, 0.25, 0.75, 0.25]
+          cycle_scale_weights: [0.75, 0.5, 0.5, 0.25]
           enable_coarse_to_fine_cycle: true
           enable_fine_sobel_weight: true
           alpha_fine_sobel: 0.3

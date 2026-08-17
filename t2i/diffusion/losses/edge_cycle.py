@@ -20,11 +20,12 @@ class SoftCannyImagePyramidCycleLoss(nn.Module):
         smooth_l1_beta: float = 0.05,
         enable_pyramid_cycle_loss: bool = True,
         cycle_scales=(512, 256, 128, 64),
-        cycle_scale_weights=(0.1, 0.25, 1.0, 0.25),
+        cycle_scale_weights=(0.75, 0.5, 0.5, 0.25),
         gaussian_kernel: int = 11,
-        threshold_min: float = 0.05,
-        threshold_max: float = 0.30,
+        threshold_min: float = 0.2745,
+        threshold_max: float = 0.5882,
         temperature: float = 0.03,
+        verifier: str = "soft_canny",
     ):
         super().__init__()
         self.loss_res = int(loss_res)
@@ -40,12 +41,18 @@ class SoftCannyImagePyramidCycleLoss(nn.Module):
         self.threshold_min = float(threshold_min)
         self.threshold_max = float(threshold_max)
         self.temperature = float(temperature)
+        self.verifier = str(verifier)
+        if self.verifier not in {"soft_canny", "canny"}:
+            raise ValueError(
+                "SoftCannyImagePyramidCycleLoss expects verifier='soft_canny' "
+                f"(or alias canny), got {self.verifier!r}"
+            )
         print(
             "[SoftCannyImagePyramidCycleLoss] "
             f"loss_res={self.loss_res} pyramid={self.enable_pyramid_cycle_loss} "
             f"scales={self.cycle_scales} weights={self.cycle_scale_weights} "
             f"k={self.gaussian_kernel} threshold=({self.threshold_min},{self.threshold_max}) "
-            f"temperature={self.temperature}"
+            f"temperature={self.temperature} verifier={self.verifier}"
         )
 
     def state_dict(self, *args, destination=None, prefix="", keep_vars=False):

@@ -85,7 +85,7 @@ maps are resized to several scales and an L1/SmoothL1 is taken at each, weighted
 |-------|-------------|---------|
 | `enable_pyramid_cycle_loss` | true | turn on multi-scale comparison. |
 | `cycle_scales` | `[512, 256, 128, 64]` | pyramid resolutions (px). |
-| `cycle_scale_weights` | `[0.1, 0.25, 1.0, 0.25]` (seg uses `[0.1,0.25,0.75,0.25]`) | per-scale weight. **128 px dominates** (weight 1.0) — mid-frequency structure is the main signal; 512 (fine) is down-weighted to avoid chasing pixel noise, 64 (coarse) anchors global layout. |
+| `cycle_scale_weights` | `[0.75, 0.5, 0.5, 0.25]` | per-scale weight for `[512, 256, 128, 64]`; fine structure is emphasized while the coarser scales retain layout supervision. |
 | `loss_res` | 128 | base resolution for the non-pyramid term. |
 | `smooth_l1_beta` | 0.05 | SmoothL1 transition point (small → near-L1, robust to outliers). |
 
@@ -108,7 +108,7 @@ Differentiable soft Canny on gen vs GT RGB at a shared random threshold:
 | `gaussian_kernel` | 11 | blur kernel before soft-Sobel (matches the k=11 edge recipe). Must be odd. |
 | `threshold_min` / `threshold_max` | 0.2745 / 0.5882 | the random soft-threshold is sampled uniformly in this range each step (= the 70/255 … 150/255 Canny range used to build edge labels). The **same** threshold is applied to gen and GT, so the loss is invariant to the random choice. |
 | `temperature` | 0.03 | sigmoid sharpness of the soft threshold (smaller = harder, more Canny-like). |
-| `cycle_scales` / `cycle_scale_weights` | `[512,256,128,64]` / `[0.1,0.25,1.0,0.25]` | same pyramid as above. |
+| `cycle_scales` / `cycle_scale_weights` | `[512,256,128,64]` / `[0.75,0.5,0.5,0.25]` | same pyramid as above. |
 
 ### 3d. DA3 depth-cycle specifics (`DA3*DepthCycleLoss`)
 

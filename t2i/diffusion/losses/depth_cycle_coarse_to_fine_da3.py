@@ -33,6 +33,7 @@ class DA3CoarseToFinePyramidDepthCycleLoss(DA3PyramidDepthCycleLoss):
         fine_debug_dir: str = "./outputs/depth_control_v1_fine_debug",
         fine_debug_every: int = 100,
         fine_debug_max_images: int = 4,
+        verifier: str = "depth_anything_v3",
         *args,
         **kwargs,
     ):
@@ -46,6 +47,12 @@ class DA3CoarseToFinePyramidDepthCycleLoss(DA3PyramidDepthCycleLoss):
         self.fine_debug_dir = str(fine_debug_dir)
         self.fine_debug_every = max(1, int(fine_debug_every))
         self.fine_debug_max_images = max(1, int(fine_debug_max_images))
+        self.verifier = str(verifier)
+        if self.verifier not in {"depth_anything_v3", "da3"}:
+            raise ValueError(
+                "DA3 depth cycle expects verifier='depth_anything_v3' "
+                f"(or alias da3), got {self.verifier!r}"
+            )
         self.register_buffer("_fine_debug_calls", torch.zeros((), dtype=torch.long), persistent=False)
         print(
             "[DA3CoarseToFinePyramidDepthCycleLoss] "
@@ -53,7 +60,7 @@ class DA3CoarseToFinePyramidDepthCycleLoss(DA3PyramidDepthCycleLoss):
             f"fine_sobel={self.enable_fine_sobel_weight} "
             f"alpha_fine_sobel={self.alpha_fine_sobel} "
             f"fine_grad={self.enable_fine_grad_loss} "
-            f"lambda_fine_grad={self.lambda_fine_grad}"
+            f"lambda_fine_grad={self.lambda_fine_grad} verifier={self.verifier}"
         )
 
     @staticmethod

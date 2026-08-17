@@ -20,6 +20,11 @@ MODES="${MODES:-depth seg edge depth_seg depth_edge seg_edge depth_seg_edge}"
 MAX_SAMPLES="${MAX_SAMPLES:-50}"; BATCH_SIZE="${BATCH_SIZE:-8}"
 NUM_STEPS="${NUM_STEPS:-50}"; CFG_SCALE="${CFG_SCALE:-2.75}"
 SEED="${SEED:-2025}"; DEVICE="${DEVICE:-cuda:0}"; DTYPE="${DTYPE:-bf16}"
+GPUS="${GPUS:-}"
+if [[ -n "${GPUS}" ]]; then
+  # Inside the process, the selected physical IDs are renumbered from zero.
+  export CUDA_VISIBLE_DEVICES="${GPUS}"
+fi
 
 cd "${PKG_ROOT}/t2i"
 echo "[infer] ckpt=${CKPT}"
